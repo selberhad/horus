@@ -23,7 +23,7 @@ class ClientManager extends EventEmitter {
 	const ip = req.connection.remoteAddress.split(':').pop();
 	console.log(`${name} connected from ${ip}`);
 	this.clients[name] = {ws, req};
-	ws.send('\u1234Checksums\u1234' + JSON.stringify({checksums: await updater.checkFiles('/var/www/ayyus/Horus')}));
+	ws.send('\u1234Checksums\u1234' + JSON.stringify({checksums: await updater.checkFiles(process.env.PLUGIN_ROOT)}));
 	ws.on('message', message => this.emit('message', {name, message}));
 	[ c('| ') + g('  __.-=-. ') +   '           '  + g(' .-=-.__  ') + c(' | ') + `Welcome, ${chalk.yellow.bold(name)}!`,
 	  c('| ') + g('  --<(*)> ') + r(' h o r u s ') + g(' <(*)>--  ') + c(' | ') + chalk.magenta(ip),
