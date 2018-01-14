@@ -8,6 +8,8 @@ const chalk = require('chalk');
 const stripAnsi = require('strip-ansi');
 const channelPrefix = chalk.red('<< ') + chalk.white('Misfits') + chalk.red(' >> ');
 
+const {ucFirst, splitFirstWord} = require('./lib/common');
+
 const port = process.argv[2] || 5511;
 const wss = new WebSocket.Server({ port });
 
@@ -33,6 +35,10 @@ wss.sendFrom = (ws, data) => wss.clients.forEach(client => {
     }
     sendMessage(client, name, data.message);
 });
+
+wss.on('error', error => console.error(error));
+
+wss.on('listening', () => console.log(`Websocket server listening on port ${port}`));
 
 process.on('SIGINT', () => {
     console.log('Caught interrupt signal');
@@ -74,26 +80,16 @@ async function run() {
 	const [command, params] = splitFirstWord(message);
 	    manager.handleCommand(client, name, command, params);		      
 	} else {
-	    slackBot.postMessage(stripAnsi(formatMessage(name, message)));
+	    slackBot.postMessage(stripAnsi(formatMessage(name, message, true)));
 	    wss.sendFrom(client, {name, message});
 	}
-    });
-    
-    console.log(`Websocket server listening on port ${port}`);
-    
-}
-
-function splitFirstWord(message) {
-    const [first] = message.split(' ', 1);
-    return [first, message.substring(first.length+1)];
+    });    
 }
 	   
-function ucFirst(string) {
-    return string[0].toUpperCase() + string.substring(1);
-}
-
-function formatMessage(from, message) {
-    return channelPrefix + chalk.bold.white(from) + chalk.red(': ') + message;
+function formatMessage(from, message, slack = false) {
+    let prefix = channelPrefix + chalk.bold.white(from) + chalk.red(':');
+    if (slack) prefix = '`' + prefix + '`';
+    return prefix + ' ' + message;
 }
 
 function sendMessage(client, from, message) {

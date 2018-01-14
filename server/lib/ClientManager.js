@@ -1,5 +1,6 @@
 const EventEmitter = require('events');
 
+const {ucFirst, splitFirstWord} = require('./common');
 const AutoUpdate = require('./AutoUpdate');
 const updater = new AutoUpdate();
 

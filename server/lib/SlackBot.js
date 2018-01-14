@@ -9,9 +9,7 @@ const dump = obj => console.dir(obj, {colors: true, depth: null});
 class SlackListener extends EventEmitter {
     constructor() {
 	super();
-	this.userNameLookup = {
-	    U7NJVBD5F: 'Selberhad'
-	};
+	this.userNameLookup = require('../slackUsers.local');
 	this.channelLookup = {
 	    C8PUUV4DC: '#chat'
 	};
