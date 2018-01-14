@@ -49,9 +49,19 @@ process.on('SIGINT', () => {
 run().catch(console.error);
 
 async function run() {
+    const manager = new ClientManager(wss);
 
     const slackBot = await startSlackBot(process.argv[3] || 7543)
     slackBot.on('message', ({userName, text, channelName, ts}) => {
+	if (!channelName) {
+	    console.log(`SlackBot: PM from ${userName}: ${text}`);
+	    if (manager.clients[userName]) {
+		manager.clients[userName].ws.send(`\u1234Remote\u1234${text}`);
+		return;
+	    } 
+	    console.log(`${userName} not currently connected`);
+	    return;
+	}
 	switch (channelName) {
 	case '#chat':
 	    wss.broadcast(formatMessage(`${userName} via slack`, text));
@@ -62,7 +72,7 @@ async function run() {
 	}
     });
 
-    const manager = new ClientManager(wss);
+
     wss.on('connection', async (ws, req) => {
 	const name = await manager.add(ws, req);
 	if (name) {

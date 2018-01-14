@@ -31,7 +31,7 @@ class SlackListener extends EventEmitter {
     postMessage(text) {
 	slack.chat.postMessage({token, text, channel: 'C8PUUV4DC'});
     }
-    emitEvent(event) {
+    async emitEvent(event) {
 	const {
 	    user,
 	    type,
@@ -45,6 +45,12 @@ class SlackListener extends EventEmitter {
 	    console.log(`Unrecognized Slack userId: ${user}`);
 	    return;
 	}
+	/*try {
+	  const {ims} = await slack.im.list({ token });
+          console.dir({ims}, {colors: true, depth: null});
+	} catch (err) {
+	  console.log(`Failed to look up channel info for ${channel}: ${err.message}`);
+	}*/
 	const channelName = this.channelLookup[channel];
 	const ev = {
 	    user, userName,
