@@ -22,7 +22,7 @@ class ClientManager extends EventEmitter {
 	}
 	const ip = req.connection.remoteAddress.split(':').pop();
 	console.log(`${name} connected from ${ip}`);
-	this.clients[name] = {ws, req};
+	this.clients[name] = {ws, req, message: new EventEmitter()};
 	ws.send('\u1234Checksums\u1234' + JSON.stringify({checksums: await updater.checkFiles(process.env.PLUGIN_ROOT)}));
 	ws.on('message', message => this.emit('message', {name, message}));
 	[ c('| ') + g('  __.-=-. ') +   '           '  + g(' .-=-.__  ') + c(' | ') + `Welcome, ${chalk.yellow.bold(name)}!`,
@@ -36,6 +36,12 @@ class ClientManager extends EventEmitter {
 	ws.on('error', (err) => console.error(err));
 	setTimeout(() => ws.send(this.getWhoList()), 1000);
 	return name;
+    }
+    handleMessage(from, body) {
+	const type = body.type;
+	delete body.type;
+	this.clients[from].message.emit(type, {from, body});
+	console.dir({type, from, body}, {colors: true, depth: null});
     }
     handleCommand(client, name, command, args) {
 	switch (command.toLowerCase()) {

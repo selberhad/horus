@@ -64,7 +64,12 @@ async function run() {
     if (!channelName) {
       console.log(`SlackBot: PM from ${userName}: ${text}`);
       if (manager.clients[userName]) {
-        manager.clients[userName].ws.send(`\u1234Remote\u1234${text}`);
+        manager.clients[userName].ws.send(
+          `\u1234Remote\u1234${JSON.stringify({command: text})}`
+        );
+        manager.clients[userName].message.once(
+	  'bucket', ({from, body}) => slackBot.showBucket(from, body)
+	);
         return;
       }
       console.log(`${userName} not currently connected`);
@@ -97,8 +102,12 @@ async function run() {
       const [command, params] = splitFirstWord(message);
       manager.handleCommand(client, name, command, params);
     } else {
-      slackBot.postMessage(stripAnsi(formatMessage(name, message, true)));
-      wss.sendFrom(client, { name, message });
+	try {
+	    manager.handleMessage(name, JSON.parse(message));
+	} catch (err) {
+	    slackBot.postMessage(stripAnsi(formatMessage(name, message, true)));
+	    wss.sendFrom(client, { name, message });
+	}
     }
   });
 }

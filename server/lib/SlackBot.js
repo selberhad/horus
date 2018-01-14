@@ -10,6 +10,7 @@ class SlackListener extends EventEmitter {
   constructor() {
     super();
     this.userNameLookup = require('../slackUsers.local');
+    this.pmChannel = {};
     this.channelLookup = {
       C8PUUV4DC: '#chat'
     };
@@ -30,6 +31,18 @@ class SlackListener extends EventEmitter {
   }
   postMessage(text) {
     slack.chat.postMessage({ token, text, channel: 'C8PUUV4DC' });
+  }
+  showBucket(to, {bucket, prompt}) {
+    const channel = this.pmChannel[to];
+    if (channel) {
+	slack.chat.postMessage({
+	    token,
+	    text: ['```', ...bucket, '```'].join('\n'),
+	    channel
+	});
+    	return;
+    }
+    console.log(`No PM channel open to ${to}`);
   }
   async emitEvent(event) {
     const { user, type, text, channel, ts, event_ts } = event;
@@ -53,6 +66,9 @@ class SlackListener extends EventEmitter {
       text,
       ts
     };
+    if (userName && !channelName) {
+    	this.pmChannel[userName] = channel;
+    }
     dump(ev);
     this.emit(type, ev);
   }
