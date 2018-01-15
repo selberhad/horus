@@ -93,10 +93,13 @@ async function run() {
       console.log('Client didnt provide a name');
     }
   });
-  manager.on('disconnect', name => wss.broadcast(`${name} disconnected.`));
-
+  manager.on('disconnect', name => {
+    delete maanger.clients[name];
+    wss.broadcast(`${name} disconnected.`);
+  });
   manager.on('message', ({ name, message }) => {
     if (!message.length) return;
+    if (!manager.clients[name]) return;
     const client = manager.clients[name].ws;
     if (message.startsWith('/')) {
       const [command, params] = splitFirstWord(message);

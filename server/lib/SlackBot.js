@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const slack = require('slack');
 const token = process.env.SLACK_BOT_TOKEN;
+const botUser = process.env.SLACK_BOT_USER;
 const scopes = 'client,rtm:stream';
 const dump = obj => console.dir(obj, { colors: true, depth: null });
 
@@ -46,6 +47,7 @@ class SlackListener extends EventEmitter {
   }
   async emitEvent(event) {
     const { user, type, text, channel, ts, event_ts } = event;
+    if (user === botUser) return;
     const userName = this.userNameLookup[user];
     if (!userName) {
       console.log(`Unrecognized Slack userId: ${user}`);
